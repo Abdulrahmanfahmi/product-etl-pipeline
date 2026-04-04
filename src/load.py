@@ -1,9 +1,3 @@
-# ============================================================
-# STEG 3 – LOAD
-# Skriver ut topp 5 dyraste produkterna som en ström
-# och sparar det rensade resultatet till en ny CSV-fil.
-# ============================================================
-
 import time
 import pandas as pd
 
@@ -15,7 +9,7 @@ def load(df: pd.DataFrame, stats: dict, output_path: str = "data/results.csv") -
     2. Sparar rensad data till en ny CSV-fil
     """
 
-    # --- Ström: topp 5 dyraste produkter ---
+    
     print("=" * 50)
     print("[LOAD] Startar ström – topp 5 dyraste produkter")
     print("=" * 50)
@@ -29,12 +23,12 @@ def load(df: pd.DataFrame, stats: dict, output_path: str = "data/results.csv") -
         print(f"         Pris     : {product['price']} kr")
         print(f"         Antal    : {product['quantity']} st")
         print()
-        time.sleep(1.0)  # simulerar stegvis leverans som en Kafka-ström
+        time.sleep(1.0)  
 
     print("  Ström klar – alla 5 produkter skickade.")
     print()
 
-    # --- Spara resultat till ny CSV ---
+    
     print("=" * 50)
     print(f"[LOAD] Sparar resultat till: {output_path}")
     print("=" * 50)
@@ -44,7 +38,7 @@ def load(df: pd.DataFrame, stats: dict, output_path: str = "data/results.csv") -
     print()
 
 
-# Testa steget direkt om du kör bara den här filen
+
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, ".")
