@@ -1,6 +1,6 @@
 # Product ETL Pipeline
 
-Ett Python-program som följer ett ETL-flöde för produktdata.
+Ett Python-program som följer ett ETL-flöde för produktdata, med FastAPI-endpoint för att exponera resultaten via REST.
 
 ---
 
@@ -13,7 +13,8 @@ product-etl-pipeline/
 ├── src/
 │   ├── extract.py           # Steg 1 – läser in CSV med pandas
 │   ├── transform.py         # Steg 2 – städar data och beräknar statistik
-│   └── load.py              # Steg 3 – strömmar topp 5 och sparar resultat
+│   ├── load.py              # Steg 3 – strömmar topp 5 och sparar resultat
+│   └── api.py               # FastAPI – exponerar ETL-resultaten via REST
 ├── main.py                  # Kör hela pipelinen i ett kommando
 ├── pyproject.toml
 └── uv.lock
@@ -26,11 +27,15 @@ product-etl-pipeline/
 ```
 products_100.csv  →  extract.py  →  transform.py  →  load.py
    (CSV-fil)          (inläsning)    (bearbetning)    (ström + spara)
+                                          ↓
+                                       api.py
+                                   (REST-endpoint)
 ```
 
 1. **Extract** – läser in `products_100.csv` med pandas och visar en förhandsgranskning
 2. **Transform** – städar ogiltiga rader, berikar med lagervärde och beräknar statistik per kategori
 3. **Load** – strömmar topp 5 dyraste produkterna en i taget och sparar resultatet till `data/results.csv`
+4. **API** – exponerar ETL-resultaten via tre FastAPI-endpoints
 
 ---
 
@@ -41,17 +46,36 @@ uv init
 uv add pandas fastapi uvicorn
 ```
 
+---
+
 ## Kör projektet
 
 ```bash
-# Kör hela ETL-pipelinen
+# Kör hela ETL-pipelinen i terminalen
 uv run python main.py
 
 # Kör varje steg separat
 uv run python src/extract.py
 uv run python src/transform.py
 uv run python src/load.py
+
+# Starta FastAPI-endpointen
+uv run uvicorn src.api:app --reload
 ```
+
+---
+
+## FastAPI Endpoints
+
+ETL-pipelinen körs automatiskt när API:et startar.
+
+| Endpoint | Beskrivning |
+|---|---|
+| `GET /stats` | Full statistik från transform-steget |
+| `GET /top5` | De 5 dyraste produkterna |
+| `GET /categories` | Kategoriöversikt per kategori |
+
+Öppna interaktiv dokumentation på: `http://127.0.0.1:8000/docs`
 
 ---
 
@@ -107,15 +131,25 @@ MVP uppnåddes efter Sprint 1 och utgjorde grunden för de efterföljande sprint
 
 **Leverans:** `main.py` + `README.md` + GitHub Projects
 
+### Sprint 4 – FastAPI: REST-endpoint
+**Mål:** Exponera ETL-resultaten via ett REST API
+
+- Skapa `api.py` med FastAPI som kör ETL-pipelinen vid uppstart
+- Exponera statistik via `GET /stats`
+- Exponera topp 5 via `GET /top5`
+- Exponera kategoriöversikt via `GET /categories`
+
+**Leverans:** `src/api.py`
+
 ---
 
 ## Reflektion – Agilt arbetssätt
 
 ### Vad jag gjorde
 
-Projektet byggdes steg för steg i en tydlig ordning: extract → transform → load → main.
+Projektet byggdes steg för steg i en tydlig ordning: extract → transform → load → main → api.
 Varje steg testades i terminalen innan nästa påbörjades och pushades som en egen commit.
-Arbetet delades upp i tre sprintar med konkreta leveransmål.
+Arbetet delades upp i fyra sprintar med konkreta leveransmål.
 
 ### Vad som fungerade bra
 
@@ -152,6 +186,10 @@ kraftfulla verktyg för filtrering, aggregering och statistik med minimal kod.
 
 **Varför uv?** uv är ett modernt och snabbt verktyg för pakethantering i Python som
 ersätter pip och venv i ett enda verktyg. Det förenklar setup och reproducerbarhet.
+
+**Varför FastAPI?** FastAPI är ett modernt Python-ramverk för att bygga REST-APIer snabbt.
+Det genererar automatisk interaktiv dokumentation via `/docs` och är enkelt att integrera
+med befintlig Python-kod.
 
 **Varför simulerad ström istället för riktig Kafka?** En riktig Kafka-uppsättning
 kräver en broker-server och är oproportionerligt komplex för ett projekt av den här
